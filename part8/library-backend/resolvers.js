@@ -1,5 +1,6 @@
 const Book = require('./models/Book')
 const Author = require('./models/Author')
+const {UserInputError} = require('apollo-server')
 
 const resolvers = {
   Query: {
@@ -21,25 +22,50 @@ const resolvers = {
     addBook: async (root, args) => {
       let author = await Author.findOne({ name: args.author })
 
-      if (!author) {
-        author = new Author({
-          name: args.author
-        })
+      if (!author)
+        author = await createAuthor(args)
 
-        author = await author.save()
+      try {
+        const saved = await new Book({ ...args, author: author._id }).save()
+        return { ...args, id: saved.id, author: author }
       }
-
-      const saved = await new Book({ ...args, author: author._id }).save()
-
-      return { ...args, id: saved.id, author: author }
+      catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args
+        })
+      }
     },
     editAuthor: async (root, args) => {
+
+      if (args.setBornTo < 0)
+        throw new UserInputError('Year can\'t be negative', {
+          invalidArgs: args.setBornTo
+        })
+
       const author = await Author.findOne({ name: args.name })
 
-      return Author.findByIdAndUpdate(author._id,
-        { born: args.setBornTo },
-        { new: true, runValidators: true, context: 'query' })
+      try {
+        return Author.findByIdAndUpdate(author._id,
+          { born: args.setBornTo },
+          { new: true, runValidators: true, context: 'query' })
+      }
+      catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args.name
+        })
+      }
     }
+  }
+}
+
+const createAuthor = async args => {
+  try {
+    return await new Author({ name: args.author }).save()
+  }
+  catch (error) {
+    throw new UserInputError(error.message, {
+      invalidArgs: args.author
+    })
   }
 }
 

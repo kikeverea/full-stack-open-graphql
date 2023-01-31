@@ -4,11 +4,11 @@ const schema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    minLength: 2
+    minLength: [2, 'Book title must have at least 2 characters']
   },
   published: {
     type: Number,
-    min: [0, "Year can't be negative"]
+    min: [0, 'Year can\'t be negative']
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,

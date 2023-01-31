@@ -4,10 +4,13 @@ const schema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
-    minLength: 4
+    unique: [true, 'Name must be unique'],
+    minLength: [4, 'Author name must have at least 4 characters']
   },
-  born: Number
+  born: {
+    type: Number,
+    min: [0, 'Year can\'t be negative' ]
+  }
 })
 
 schema.set('toJSON', {
