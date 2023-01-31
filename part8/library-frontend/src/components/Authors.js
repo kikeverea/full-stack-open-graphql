@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client'
 import { ALL_AUTHORS } from '../client/queries'
+import AuthorBirthYear from './AuthorBirthYear'
 
 const Authors = ({ show }) => {
 
@@ -28,6 +29,7 @@ const Authors = ({ show }) => {
           ))}
         </tbody>
       </table>
+      <AuthorBirthYear />
     </div>
     :
     null
