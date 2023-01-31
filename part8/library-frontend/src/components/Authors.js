@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client'
 import { ALL_AUTHORS } from '../client/queries'
-import AuthorBirthYear from './AuthorBirthYear'
+import  EditBirthYear from './EditBirthYear'
 
 const Authors = ({ show }) => {
 
@@ -20,7 +20,7 @@ const Authors = ({ show }) => {
             <th>born</th>
             <th>books</th>
           </tr>
-          {authors.data.allAuthors.map(author => (
+          { authors.data.allAuthors.map(author => (
             <tr key={ author.name }>
               <td>{ author.name }</td>
               <td>{ author.born }</td>
@@ -29,7 +29,7 @@ const Authors = ({ show }) => {
           ))}
         </tbody>
       </table>
-      <AuthorBirthYear />
+      <EditBirthYear authors={ authors.data.allAuthors }/>
     </div>
     :
     null

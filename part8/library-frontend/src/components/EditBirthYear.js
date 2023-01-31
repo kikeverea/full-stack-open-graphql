@@ -3,7 +3,7 @@ import { useMutation } from '@apollo/client'
 import { UPDATE_AUTHOR_BORN } from '../client/mutations'
 import { ALL_AUTHORS } from '../client/queries'
 
-const AuthorBirthYear = () => {
+const EditBirthYear = ({ authors }) => {
 
   const [ name, setName ] = useState('')
   const [ birthYear, setBirthYear ] = useState('')
@@ -23,9 +23,6 @@ const AuthorBirthYear = () => {
   const column = { display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 200 }
   const row = { display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}
 
-  const nameChange = ({ target }) =>
-    setName(target.value)
-
   const yearChange = ({ target }) =>
     setBirthYear(target.value)
 
@@ -34,20 +31,25 @@ const AuthorBirthYear = () => {
     setTimeout(() => setError(null), 3000)
   }
 
-  const editAuthorBirthYear = async event => {
+  const EditBirthYear = async event => {
     event.preventDefault()
-    await updateAuthor({ variables: { author: name, setBornTo: birthYear } })
+    await updateAuthor({ variables: { author: name, setBornTo: parseInt(birthYear) } })
   }
 
   return (
     <>
       <h2>Set birth year</h2>
-      <form onSubmit={ editAuthorBirthYear }>
+      <form onSubmit={ EditBirthYear }>
         <div style={ column }>
-          <div style={ row }>
-            name
-            <input type="text" value={ name } onChange={ nameChange }/>
-          </div>
+          <select name="author" id="author" onChange={ ({ target }) => setName(target.value)}>
+            { authors.map(author =>
+              <option
+                key={ author.name }
+                value={ author.name }>
+                { author.name }
+              </option>)
+            }
+          </select>
           <div style={ row }>
             year born
             <input name='year' type="text" value={ birthYear } onChange={ yearChange }/>
@@ -64,4 +66,4 @@ const AuthorBirthYear = () => {
   )
 }
 
-export default AuthorBirthYear
+export default  EditBirthYear
