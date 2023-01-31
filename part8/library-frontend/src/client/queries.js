@@ -9,3 +9,13 @@ export const allAuthors = gql`
     }
   }
 `
+
+export const allBooks = gql`
+  query {
+      allBooks {
+        title,
+        author,
+        published
+      }
+  }  
+`
