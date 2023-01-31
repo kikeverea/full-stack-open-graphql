@@ -1,9 +1,9 @@
 import { useQuery } from '@apollo/client'
-import { allBooks } from '../client/queries'
+import { ALL_BOOKS } from '../client/queries'
 
 const Books = ({ show }) => {
 
-  const books = useQuery(allBooks)
+  const books = useQuery(ALL_BOOKS)
 
   if (books.loading)
     return <div>loading...</div>
