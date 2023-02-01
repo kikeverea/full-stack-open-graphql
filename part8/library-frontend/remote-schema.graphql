@@ -6,14 +6,14 @@ schema {
 }
 
 type Author {
-    bookCount: Int!
+    bookCount: Int
     born: Int
     id: ID!
     name: String!
 }
 
 type Book {
-    author: String!
+    author: Author!
     genres: [String!]
     id: ID!
     published: Int!
@@ -22,7 +22,9 @@ type Book {
 
 type Mutation {
     addBook(author: String!, genres: [String!], published: Int!, title: String!): Book
+    createUser(favouriteGenre: String!, username: String!): User
     editAuthor(name: String!, setBornTo: Int!): Author
+    login(password: String!, username: String!): Token
 }
 
 type Query {
@@ -30,4 +32,15 @@ type Query {
     allBooks(author: String, genre: String): [Book!]!
     authorCount: Int!
     bookCount: Int!
+    me: User
+}
+
+type Token {
+    value: String!
+}
+
+type User {
+    favouriteGenre: String!
+    id: ID!
+    username: String!
 }
