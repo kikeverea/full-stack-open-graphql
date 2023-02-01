@@ -1,6 +1,12 @@
 const Book = require('./models/Book')
 const Author = require('./models/Author')
-const {UserInputError} = require('apollo-server')
+const User = require('./models/User')
+
+const jwt = require('jsonwebtoken')
+
+const { UserInputError, AuthenticationError} = require('apollo-server')
+
+const DUMMY_PASSWORD = 'secret'
 
 const resolvers = {
   Query: {
@@ -16,10 +22,14 @@ const resolvers = {
       }
 
       return authors.map(setBookCount)
-    }
+    },
+    me: (root, args, { loggedInUser }) => loggedInUser
   },
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, { loggedInUser }) => {
+      if (!loggedInUser)
+        throw new AuthenticationError('Not authenticated')
+
       let author = await Author.findOne({ name: args.author })
 
       if (!author)
@@ -35,7 +45,9 @@ const resolvers = {
         })
       }
     },
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, { loggedInUser }) => {
+      if (!loggedInUser)
+        throw new AuthenticationError('Not authenticated')
 
       if (args.setBornTo < 0)
         throw new UserInputError('Year can\'t be negative', {
@@ -54,6 +66,30 @@ const resolvers = {
           invalidArgs: args.name
         })
       }
+    },
+    createUser: async (root, args) => {
+      try {
+        return new User({ ...args }).save()
+      }
+      catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args
+        })
+      }
+    },
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username })
+
+      if (!user || args.password !== DUMMY_PASSWORD)
+        throw new UserInputError('Wrong credentials')
+
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      }
+
+      const JWT_SECRET = process.env.SECRET
+      return { value: jwt.sign(userForToken, JWT_SECRET) }
     }
   }
 }
