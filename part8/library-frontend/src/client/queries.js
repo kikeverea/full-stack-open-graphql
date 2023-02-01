@@ -18,7 +18,8 @@ export const ALL_BOOKS = gql`
           name,
           born
         },
-        published
+        published,
+        genres
       }
   }  
 `
