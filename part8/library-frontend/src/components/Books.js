@@ -1,23 +1,26 @@
 import { useQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../client/queries'
-import { useEffect } from 'react'
+import {useEffect, useState} from 'react'
 import BooksTable from './BooksTable'
-import { useFilterableBooks } from '../hooks/useFilterableBooks'
 
 const Books = ({ show }) => {
 
-  const allBooks = useQuery(ALL_BOOKS)
-  const [books, changeFilter, changeBooks, filter] = useFilterableBooks()
+  const [filter, setFilter] = useState([])
+  const [books, setBooks] = useState([])
+
+  const fetchBooks = useQuery(
+    ALL_BOOKS,
+    { variables : filter.length > 0 ? { genres: filter } : {} })
 
   useEffect(() => {
-    if (allBooks.data) {
-      changeBooks(allBooks.data.allBooks)
+    if (fetchBooks.data) {
+      setBooks(fetchBooks.data.allBooks)
     }
   },
-  [allBooks.data])
+  [fetchBooks.data])
 
-  if (allBooks.loading)
-    return <div>loading...</div>
+  if (!show)
+    return null
 
   const extractGenres = books => {
     const genres = books
@@ -29,26 +32,31 @@ const Books = ({ show }) => {
   }
 
   return (
-    show ?
-      <div>
-        <h2>Books</h2>
-        { filter.length > 0 && <h4>{`Filters: ${filter.join(', ')}`}</h4> }
-        <BooksTable books={ books }/>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginTop: 32 }}>
-          { books ?
+    <div>
+      <h2>Books</h2>
+      { filter.length > 0 && <h4>{`Filters: ${filter.join(', ')}`}</h4> }
+      { fetchBooks.loading
+        ?
+        <div>loading...</div>
+        :
+        <>
+          <BooksTable books={ books }/>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginTop: 32 }}>
+            { books ?
               extractGenres(books).map(genre =>
-              <button
-                key={ genre }
-                onClick={() => changeFilter(genre) }>
-                { genre }
-              </button>
-          ) : null
-          }
-          <button onClick={() => changeFilter(null) }>clear filter</button>
-        </div>
-      </div>
-    :
-    null
+                <button
+                  key={ genre }
+                  onClick={() => setFilter([...filter, genre]) }>
+                  { genre }
+                </button>
+              ) : null
+            }
+            <button onClick={() => setFilter([]) }>clear filter</button>
+          </div>
+        </>
+      }
+
+    </div>
   )
 }
 

@@ -1,35 +1,37 @@
 import BooksTable from './BooksTable'
 import { useQuery } from '@apollo/client'
-import { ALL_BOOKS, ME } from '../client/queries'
-import { useFilterableBooks } from '../hooks/useFilterableBooks'
-import {useEffect } from 'react'
+import { ALL_BOOKS } from '../client/queries'
+import {useEffect, useState} from 'react'
 
 const Recommendations = ({ show, user }) => {
 
-  const allBooks = useQuery(ALL_BOOKS)
-  const [books, changeFilter, changeBooks, filter] = useFilterableBooks()
+  const fetchBooks = useQuery(
+    ALL_BOOKS,
+    { variables : user ? { genres: user.favouriteGenre } : {} })
+
+  const [books, setBooks] = useState([])
 
   useEffect(() => {
-    if (allBooks.data)
-      changeBooks(allBooks.data.allBooks)
+    if (fetchBooks.data)
+      setBooks(fetchBooks.data.allBooks)
   },
-  [allBooks.data])
+  [fetchBooks.data])
 
   useEffect(() => {
     if (user)
-      changeFilter(user.favouriteGenre)
+      fetchBooks.refetch()
   }, [user])
 
   if (!show)
     return null
 
-  if (allBooks.loading)
+  if (fetchBooks.loading)
     return <div>loading...</div>
 
   return (
     <>
       <h1>Recommendations</h1>
-      <p>Books in your favourite genre: <strong>{ filter[0] }</strong>
+      <p>Books in your favourite genre: <strong>{ user.favouriteGenre }</strong>
       </p>
       <BooksTable books={ books }/>
     </>
