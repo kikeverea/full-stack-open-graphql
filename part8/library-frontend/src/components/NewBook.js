@@ -29,7 +29,7 @@ const NewBook = ({ show }) => {
   const [ createBook ] = useMutation(ADD_BOOK, {
     onError: error => {
       const graphQlErrors = error.graphQLErrors
-      setError(graphQlErrors.length > 0 ? graphQlErrors[0].message : 'Error')
+      displayError(graphQlErrors.length > 0 ? graphQlErrors[0].message : 'Error')
     },
     update: (cache, res) => {
       const addedBook = res.data.addBook
@@ -41,6 +41,11 @@ const NewBook = ({ show }) => {
         updateAddBookCache(cache, addedBook, { genres: [genre] })
     }
   })
+
+  const displayError = error => {
+    setError(error)
+    setTimeout(() => setError(null), 3000)
+  }
 
   if (!show) {
     return null
