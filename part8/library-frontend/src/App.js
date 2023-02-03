@@ -15,7 +15,7 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
 
-  const me = useQuery(ME)
+  const me = useQuery(ME, { fetchPolicy: 'no-cache' })
 
   useEffect(() => {
     const token = localStorage.getItem('library-user-token')
