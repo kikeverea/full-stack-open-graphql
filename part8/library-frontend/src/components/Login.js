@@ -26,6 +26,8 @@ const Login = ({ show, loggedIn, setError }) => {
   const submit = async event => {
     event.preventDefault()
     login({ variables: { username, password } })
+    setUsername('')
+    setPassword('')
   }
 
   return (
