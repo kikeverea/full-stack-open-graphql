@@ -23,6 +23,7 @@ const Books = ({ show }) => {
     const genres = books
       .map(book => book.genres)
       .flat()
+      .filter(genre => !filter.includes(genre))
 
     return [...new Set(genres)]
   }
@@ -31,6 +32,7 @@ const Books = ({ show }) => {
     show ?
       <div>
         <h2>Books</h2>
+        { filter.length > 0 && <h4>{`Filters: ${filter.join(', ')}`}</h4> }
         <BooksTable books={ books }/>
         <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginTop: 32 }}>
           { books ?
