@@ -4,21 +4,37 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
 import Notification from './components/Notification'
-import {useApolloClient} from '@apollo/client'
+import {useApolloClient, useQuery} from '@apollo/client'
+import Recommendations from './components/Recommendations'
+import { ME } from './client/queries'
 
 const App = () => {
   const client = useApolloClient()
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
+  const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
+
+  const me = useQuery(ME)
 
   useEffect(() => {
     const token = localStorage.getItem('library-user-token')
-    if (token)
+    if (token) {
       setToken(token)
+    }
   }, [])
 
-  const login = async token => {
+  useEffect(() => {
+    me.refetch()
+  }, [token])
+
+  useEffect(() => {
+    if (me.data) {
+      setUser(me.data.me)
+    }
+  }, [me.data])
+
+  const loggedIn = async token => {
     localStorage.setItem('library-user-token', token)
     setToken(token)
     setPage('books')
@@ -28,6 +44,7 @@ const App = () => {
     localStorage.removeItem('library-user-token')
     await client.clearStore()
     setToken(null)
+    setPage('authors')
   }
 
   return (
@@ -39,6 +56,7 @@ const App = () => {
         {
           token ?
             <>
+              <button onClick={() => setPage('recommendations')}>recommend</button>
               <button onClick={() => setPage('add')}>add book</button>
               <button onClick={ logout }>logout</button>
             </>
@@ -50,7 +68,8 @@ const App = () => {
       <Authors show={page === 'authors'} />
       <Books show={page === 'books'} />
       <NewBook show={page === 'add'} />
-      <Login show={page === 'login'} loggedIn={ login } setError={ setError }/>
+      <Recommendations show={page === 'recommendations'} user={ user } />
+      <Login show={page === 'login'} loggedIn={ loggedIn } setError={ setError }/>
     </div>
   )
 }
