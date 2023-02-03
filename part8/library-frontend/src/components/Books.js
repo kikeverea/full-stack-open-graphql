@@ -1,66 +1,50 @@
 import { useQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../client/queries'
-import {useEffect, useState} from 'react'
+import { useEffect } from 'react'
+import BooksTable from './BooksTable'
+import { useFilterableBooks } from '../hooks/useFilterableBooks'
 
 const Books = ({ show }) => {
 
   const allBooks = useQuery(ALL_BOOKS)
-
-  const [books, setBooks] = useState(null)
-  const [filter, setFilter] = useState('')
-
-  const filterByGenre = (books, filter) => {
-    return filter
-      ? allBooks.data.allBooks.filter(book => book.genres.includes(filter))
-      : allBooks.data.allBooks
-  }
+  const [books, changeFilter, changeBooks, filter] = useFilterableBooks()
 
   useEffect(() => {
-    if (allBooks.data)
-      setBooks(filterByGenre(books, filter))
+    if (allBooks.data) {
+      changeBooks(allBooks.data.allBooks)
+    }
   },
-  [allBooks.data, filter])
+  [allBooks.data])
 
-  if (allBooks.loading || !books)
+  if (allBooks.loading)
     return <div>loading...</div>
 
   const extractGenres = books => {
-    const genres = books.map(book => book.genres).flat()
+    const genres = books
+      .map(book => book.genres)
+      .flat()
+
     return [...new Set(genres)]
   }
 
   return (
-    show
-    ? <div>
-      <h2>books</h2>
-      <table>
-        <tbody>
-          <tr>
-            <th></th>
-            <th>author</th>
-            <th>published</th>
-          </tr>
-          { books.map(book => (
-            <tr key={ book.title }>
-              <td>{ book.title }</td>
-              <td>{ book.author.name }</td>
-              <td>{ book.published }</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    show ?
+      <div>
+        <h2>Books</h2>
+        <BooksTable books={ books }/>
         <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginTop: 32 }}>
-          { extractGenres(books).map(genre =>
+          { books ?
+              extractGenres(books).map(genre =>
               <button
                 key={ genre }
-                onClick={() => setFilter(genre) }>
+                onClick={() => changeFilter(genre) }>
                 { genre }
               </button>
-            )
+          ) : null
           }
-          <button onClick={() => setFilter(null) }>clear filter</button>
+          <button onClick={() => changeFilter(null) }>clear filter</button>
         </div>
-    </div>
+      </div>
     :
     null
   )
