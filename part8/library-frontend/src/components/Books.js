@@ -8,9 +8,12 @@ const Books = ({ show }) => {
   const [filter, setFilter] = useState([])
   const [books, setBooks] = useState([])
 
-  const fetchBooks = useQuery(
-    ALL_BOOKS,
-    { variables : filter.length > 0 ? { genres: filter } : {} })
+  const fetchBooks = useQuery(ALL_BOOKS, {
+    variables : filter.length > 0 ? { genres: filter } : {},
+    // complexity in keeping the cache updated rises significantly with queries with
+    // multiple filters, so caching is disabled (no-cache) for those queries
+    fetchPolicy: filter.length > 1 ? 'no-cache' : 'cache-first'
+  })
 
   useEffect(() => {
     if (fetchBooks.data) {
@@ -18,6 +21,12 @@ const Books = ({ show }) => {
     }
   },
   [fetchBooks.data])
+
+  useEffect(() => {
+    if (!show)
+      setFilter([])
+  },
+  [show])
 
   if (!show)
     return null

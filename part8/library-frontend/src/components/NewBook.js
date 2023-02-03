@@ -3,16 +3,46 @@ import { useMutation } from '@apollo/client'
 import { ADD_BOOK } from '../client/mutations'
 import { ALL_AUTHORS, ALL_BOOKS } from '../client/queries'
 
-const NewBook = (props) => {
+const NewBook = ({ show }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
+  const [error, setError] = useState('')
 
-  const [ createBook ] = useMutation(ADD_BOOK)
+  const updateAddBookCache = (cache, newBook, variables = null) => {
+    cache.updateQuery({
+      query: ALL_BOOKS,
+      variables: variables
+    },
+    data => {
+      // return an object with the modified data, or undefined if no change should be made
+      return (
+        data
+        ? { allBooks: data.allBooks.concat(newBook) }
+        : undefined
+      )
+    })
+  }
 
-  if (!props.show) {
+  const [ createBook ] = useMutation(ADD_BOOK, {
+    onError: error => {
+      const graphQlErrors = error.graphQLErrors
+      setError(graphQlErrors.length > 0 ? graphQlErrors[0].message : 'Error')
+    },
+    update: (cache, res) => {
+      const addedBook = res.data.addBook
+      const genres = addedBook.genres
+
+      updateAddBookCache(cache, addedBook)
+
+      for (const genre of genres)
+        updateAddBookCache(cache, addedBook, { genres: [genre] })
+    }
+  })
+
+  if (!show) {
     return null
   }
 
@@ -20,10 +50,7 @@ const NewBook = (props) => {
     event.preventDefault()
 
     const publishedValue = parseInt(published)
-
-    await createBook({ variables: { title, author, published: publishedValue, genres },
-      refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS } ]
-    })
+    await createBook({ variables: { title, author, published: publishedValue, genres }})
 
     setTitle('')
     setPublished('')
@@ -73,6 +100,7 @@ const NewBook = (props) => {
         </div>
         <div>genres: {genres.join(' ')}</div>
         <button type="submit">create book</button>
+        { error && <div>{ error }</div> }
       </form>
     </div>
   )

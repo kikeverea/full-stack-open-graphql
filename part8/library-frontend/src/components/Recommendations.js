@@ -7,7 +7,7 @@ const Recommendations = ({ show, user }) => {
 
   const fetchBooks = useQuery(
     ALL_BOOKS,
-    { variables : user ? { genres: user.favouriteGenre } : {} })
+    { variables : user ? { genres: [user.favouriteGenre] } : {} })
 
   const [books, setBooks] = useState([])
 
