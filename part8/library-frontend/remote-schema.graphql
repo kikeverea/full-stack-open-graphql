@@ -3,6 +3,7 @@
 schema {
     query: Query
     mutation: Mutation
+    subscription: Subscription
 }
 
 type Author {
@@ -33,6 +34,10 @@ type Query {
     authorCount: Int!
     bookCount: Int!
     me: User
+}
+
+type Subscription {
+    bookAdded: Book!
 }
 
 type Token {
