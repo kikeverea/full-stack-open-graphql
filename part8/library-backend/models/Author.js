@@ -10,7 +10,11 @@ const schema = new mongoose.Schema({
   born: {
     type: Number,
     min: [0, 'Year can\'t be negative' ]
-  }
+  },
+  books: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book'
+  }]
 })
 
 schema.set('toJSON', {

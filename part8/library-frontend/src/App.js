@@ -6,8 +6,10 @@ import Login from './components/Login'
 import Notification from './components/Notification'
 import {useApolloClient, useQuery, useSubscription} from '@apollo/client'
 import Recommendations from './components/Recommendations'
-import {ALL_BOOKS, ME} from './client/queries'
+import {ALL_AUTHORS, ALL_BOOKS, ME} from './client/queries'
 import {BOOK_ADDED} from './client/subscriptions'
+import {calculateNewValue} from '@testing-library/user-event/dist/utils'
+import newBook from './components/NewBook'
 
 const App = () => {
   const client = useApolloClient()
@@ -35,7 +37,31 @@ const App = () => {
     }
   }, [me.data])
 
-  const addToCachedQueries = (newBook, variables = null) => {
+  const addToCachedAuthorQueries = (newBook) => {
+
+    const handleNewBook = allAuthors => {
+      const isInCache = allAuthors.find(author => author.name === newBook.author.name)
+      if (isInCache) {
+        return allAuthors.map(author => author.name === newBook.author.name
+          ? { ...author, bookCount: author.bookCount + 1 }
+          : author)
+      }
+      else {
+        return allAuthors.concat({ name: newBook.author.name, born: newBook.author.born })
+      }
+    }
+
+    client.cache.updateQuery(
+      {
+        query: ALL_AUTHORS
+      },
+      data => data
+        ? { allAuthors: handleNewBook(data.allAuthors) }
+        : undefined
+    )
+  }
+
+  const addToCachedBookQueries = (newBook, variables = null) => {
     client.cache.updateQuery({
         query: ALL_BOOKS,
         variables: variables
@@ -47,17 +73,21 @@ const App = () => {
             ? { allBooks: data.allBooks.concat(newBook) }
             : undefined
         )
-      })
+      }
+    )
   }
 
   useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
       const addedBook = data.data.bookAdded
 
-      addToCachedQueries(addedBook)
+      console.log('added book', addedBook)
+
+      addToCachedBookQueries(addedBook)
+      addToCachedAuthorQueries(addedBook)
 
       for (const genre of addedBook.genres)
-        addToCachedQueries(addedBook, { genres: [genre] })
+        addToCachedBookQueries(addedBook, { genres: [genre] })
 
       showInfo(`Book '${ addedBook.title }' added`)
     }
