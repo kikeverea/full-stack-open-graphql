@@ -1,10 +1,10 @@
 const Book = require('./models/Book')
 const Author = require('./models/Author')
 const User = require('./models/User')
-
+const { PubSub } = require('graphql-subscriptions')
+const pubsub = new PubSub()
 const jwt = require('jsonwebtoken')
-
-const { UserInputError, AuthenticationError} = require('apollo-server')
+const { UserInputError, AuthenticationError } = require('./errors')
 
 const DUMMY_PASSWORD = 'secret'
 
@@ -43,12 +43,15 @@ const resolvers = {
 
       try {
         const saved = await new Book({ ...args, author: author._id }).save()
-        return { ...args, id: saved.id, author: author }
+        const book = { ...args, id: saved.id, author: author }
+
+        // noinspection ES6MissingAwait
+        pubsub.publish('BOOK_ADDED', { bookAdded: book })
+
+        return book
       }
       catch (error) {
-        throw new UserInputError(error.message, {
-          invalidArgs: args
-        })
+        throw new UserInputError(error.message)
       }
     },
     editAuthor: async (root, args, { loggedInUser }) => {
@@ -56,9 +59,8 @@ const resolvers = {
         throw new AuthenticationError('Not authenticated')
 
       if (args.setBornTo < 0)
-        throw new UserInputError('Year can\'t be negative', {
-          invalidArgs: args.setBornTo
-        })
+        throw new UserInputError('Year can\'t be negative',
+          { invalidArgs: args.setBornTo})
 
       const author = await Author.findOne({ name: args.name })
 
@@ -68,9 +70,7 @@ const resolvers = {
           { new: true, runValidators: true, context: 'query' })
       }
       catch (error) {
-        throw new UserInputError(error.message, {
-          invalidArgs: args.name
-        })
+        throw new UserInputError(error.message)
       }
     },
     createUser: async (root, args) => {
@@ -97,6 +97,11 @@ const resolvers = {
       const JWT_SECRET = process.env.SECRET
       return { value: jwt.sign(userForToken, JWT_SECRET) }
     }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator('BOOK_ADDED')
+    }
   }
 }
 
@@ -105,9 +110,7 @@ const createAuthor = async args => {
     return await new Author({ name: args.author }).save()
   }
   catch (error) {
-    throw new UserInputError(error.message, {
-      invalidArgs: args.author
-    })
+    throw new UserInputError(error.message)
   }
 }
 
