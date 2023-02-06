@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client'
 import { ADD_BOOK } from '../client/mutations'
-import { ALL_BOOKS } from '../client/queries'
 
 const NewBook = ({ show }) => {
   const [title, setTitle] = useState('')
@@ -11,34 +10,10 @@ const NewBook = ({ show }) => {
   const [genres, setGenres] = useState([])
   const [error, setError] = useState('')
 
-  const updateAddBookCache = (cache, newBook, variables = null) => {
-    cache.updateQuery({
-      query: ALL_BOOKS,
-      variables: variables
-    },
-    data => {
-      // return an object with the modified data, or undefined if no change should be made
-      return (
-        data
-        ? { allBooks: data.allBooks.concat(newBook) }
-        : undefined
-      )
-    })
-  }
-
   const [ createBook ] = useMutation(ADD_BOOK, {
     onError: error => {
       const graphQlErrors = error.graphQLErrors
       displayError(graphQlErrors.length > 0 ? graphQlErrors[0].message : 'Error')
-    },
-    update: (cache, res) => {
-      const addedBook = res.data.addBook
-      const genres = addedBook.genres
-
-      updateAddBookCache(cache, addedBook)
-
-      for (const genre of genres)
-        updateAddBookCache(cache, addedBook, { genres: [genre] })
     }
   })
 

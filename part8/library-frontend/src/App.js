@@ -6,7 +6,7 @@ import Login from './components/Login'
 import Notification from './components/Notification'
 import {useApolloClient, useQuery, useSubscription} from '@apollo/client'
 import Recommendations from './components/Recommendations'
-import { ME } from './client/queries'
+import {ALL_BOOKS, ME} from './client/queries'
 import {BOOK_ADDED} from './client/subscriptions'
 
 const App = () => {
@@ -35,11 +35,31 @@ const App = () => {
     }
   }, [me.data])
 
+  const addToCachedQueries = (newBook, variables = null) => {
+    client.cache.updateQuery({
+        query: ALL_BOOKS,
+        variables: variables
+      },
+      data => {
+        // return an object with the modified data, or undefined if no change should be made
+        return (
+          data
+            ? { allBooks: data.allBooks.concat(newBook) }
+            : undefined
+        )
+      })
+  }
+
   useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
-      const title = data.data.bookAdded.title
-      const message = `Book '${ title }' added`
-      showInfo(message)
+      const addedBook = data.data.bookAdded
+
+      addToCachedQueries(addedBook)
+
+      for (const genre of addedBook.genres)
+        addToCachedQueries(addedBook, { genres: [genre] })
+
+      showInfo(`Book '${ addedBook.title }' added`)
     }
   })
 
