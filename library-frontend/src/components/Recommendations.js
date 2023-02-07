@@ -1,7 +1,7 @@
 import BooksTable from './BooksTable'
 import { useQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../client/queries'
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 
 const Recommendations = ({ show, user }) => {
 

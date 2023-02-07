@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client'
-import {BOOK_DETAILS} from './fragments'
+import { BOOK_DETAILS } from './fragments'
 
 export const ALL_AUTHORS = gql`
   query {

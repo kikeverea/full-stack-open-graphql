@@ -1,15 +1,13 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
 import Notification from './components/Notification'
-import {useApolloClient, useQuery, useSubscription} from '@apollo/client'
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
 import Recommendations from './components/Recommendations'
-import {ALL_AUTHORS, ALL_BOOKS, ME} from './client/queries'
-import {BOOK_ADDED} from './client/subscriptions'
-import {calculateNewValue} from '@testing-library/user-event/dist/utils'
-import newBook from './components/NewBook'
+import { ALL_AUTHORS, ALL_BOOKS, ME } from './client/queries'
+import { BOOK_ADDED } from './client/subscriptions'
 
 const App = () => {
   const client = useApolloClient()
@@ -63,17 +61,17 @@ const App = () => {
 
   const addToCachedBookQueries = (newBook, variables = null) => {
     client.cache.updateQuery({
-        query: ALL_BOOKS,
-        variables: variables
-      },
-      data => {
-        // return an object with the modified data, or undefined if no change should be made
-        return (
-          data
-            ? { allBooks: data.allBooks.concat(newBook) }
-            : undefined
-        )
-      }
+      query: ALL_BOOKS,
+      variables: variables
+    },
+    data => {
+      // return an object with the modified data, or undefined if no change should be made
+      return (
+        data
+          ? { allBooks: data.allBooks.concat(newBook) }
+          : undefined
+      )
+    }
     )
   }
 
@@ -133,7 +131,7 @@ const App = () => {
               <button onClick={() => setPage('add')}>add book</button>
               <button onClick={ logout }>logout</button>
             </>
-          :
+            :
             <button onClick={() => setPage('login')}>login</button>
         }
       </div>

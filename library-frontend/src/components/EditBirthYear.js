@@ -21,7 +21,7 @@ const EditBirthYear = ({ authors }) => {
   })
 
   const column = { display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 200 }
-  const row = { display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}
+  const row = { display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }
 
   const yearChange = ({ target }) =>
     setBirthYear(target.value)

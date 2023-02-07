@@ -25,8 +25,6 @@ mongoose.connect(config.DATABASE_URI)
     console.error('error connecting to MongoDB:', error.message)
   })
 
-mongoose.set('debug', true)
-
 // use a function, so it can be called asynchronously and await for the GraphQl
 // server to start, before express starts listening to the specified port.
 const start = async () => {
